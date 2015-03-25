@@ -1,0 +1,25 @@
+{
+  "name": "angular-select-two",
+  "version": "0.0.1",
+  "description": "Angular Directive for Select2",
+  "main": "select-two.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "select2",
+    "angular"
+  ],
+  "authors": [
+    "Aditya Darmawan"
+  ],
+  "license": "MIT",
+  "homepage": "http://tyaslab.com",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
