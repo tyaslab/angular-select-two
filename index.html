@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html data-ng-app="app">
+<head>
+    <title>Test Select2</title>
+    <link rel="stylesheet" href="bower_components/select2/select2.css">
+</head>
+<body>
+
+<div data-ng-controller="MyController">
+    <div
+        data-ui-select-two="options"
+        data-class="this-is-a-class"
+        data-width="300px"
+        data-on-selected="onSelected($value)">
+    </div>
+
+    <div
+        data-ui-select-two="tag_options"
+        data-width="500px"
+        data-on-selected="onTagSelected($value)"
+        >
+    </div>
+</div>
+
+
+<script src="bower_components/jquery/dist/jquery.js"></script>
+<script src="bower_components/select2/select2.js"></script>
+<script src="bower_components/angular/angular.js"></script>
+<script>
+    var app = angular.module('app', []);
+
+    app.directive('uiSelectTwo', function($timeout, $http) {
+        return {
+            scope: {
+                options: '=uiSelectTwo',
+                onSelected: '&onSelected'
+            },
+            link: function(scope, element, attrs) {
+                // generate fake div
+                var fake_div = '<div';
+                if (attrs.width) {
+                    fake_div += ' style="width: ' + attrs.width + ';"';
+                }
+
+                if (attrs.class) {
+                    fake_div += ' class="' + attrs.class + '"';
+                }
+
+                fake_div += "></div>";
+                console.log(fake_div);
+                element.html(fake_div);
+                element.find('div').select2(scope.options);
+
+                element.on('select2-close select2-removed', function(e) {
+                    if (attrs.onSelected) {
+                        var data = element.find('div').select2('data');
+                        if (!scope.$$phase) {
+                            scope.$apply(function() {
+                                scope.onSelected({$value:data});
+                            });
+                        }
+                    }
+                });
+            }
+        };
+    });
+
+    app.controller('MyController', ['$scope', '$http', function($scope, $http) {
+        // Orders how select2 do the ajax
+        // ajax.data --> ajax.transport --> ajax.results
+
+        $scope.options = {
+            allowClear: true,
+            tags: true,
+            ajax: {
+                transport: function(query) {
+                    // query contains any parameter useful for ajax calling
+                    // here, for example, we have at least term and page (default=1)
+
+                    $http.get('/api/v1/patient/?fuzzy=' + query.data.term + '&page=' + query.data.page).then(
+                        function(results) {
+                            query.success(results.data);
+                        },
+                        function(errors) {
+
+                        }
+                    );
+                },
+                data: function(term, page) {
+                    // this function handles our searching
+                    // default page = 1
+
+                    return {
+                        page: page,
+                        term: term
+                    }
+                },
+                results: function(data, page) {
+                    // this is the final function after we get the data from api
+                    // 'more' is a condition if resource has next page
+                    return {
+                        results: data.objects,
+                        more: page + 1 <= data.meta.total_page
+                    };
+                }
+            },
+            formatResult: function(obj) {
+                return obj.name
+            },
+            formatSelection: function(obj){
+                return obj.name
+            },
+            id: function(obj) {
+                return obj.resource_uri
+            },
+            initSelection: function(element, callback) {
+                var val = $scope.apaAtuh;
+
+                $http.get(val).then(
+                    function(results) {
+                        callback(results.data);
+                    },
+                    function(errors) {
+
+                    }
+                );
+            }
+        };
+
+        $scope.tag_options = {
+            tags: ['red', 'green', 'blue'],
+            tokenSeparators: [',', ' ']
+        };
+
+        $scope.onSelected = function(value) {
+            console.log(value);
+            $scope.apaAtuh = value.resource_uri;
+        };
+
+        $scope.onTagSelected = function(value) {
+            console.log(value);
+        }
+
+        $scope.init = function() {
+            console.log('Entering My Controller');
+            $scope.apaAtuh = '/api/v1/patient/140006/';
+        };
+
+        $scope.init();
+    }]);
+</script>
+</body>
+</html>
