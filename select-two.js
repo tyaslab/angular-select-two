@@ -2,6 +2,7 @@ var selectTwo = angular.module('selectTwo', []);
 
 selectTwo.directive('selectTwo', function($timeout, $http) {
     return {
+        require: '?ngModel',
         scope: {
             options: '=selectTwo',
             onSelected: '&onSelected'
@@ -21,7 +22,8 @@ selectTwo.directive('selectTwo', function($timeout, $http) {
 
             // select2-ize fake div
             element.html(fake_div);
-            element.find('div').select2(scope.options).select2('val', 'helper');
+            var select2element = element.find('div').select2(scope.options);
+            select2element.select2('val', 'helper');
 
             // bind event: when closed and when an item removed
             element.on('select2-close select2-removed', function(e) {
@@ -29,11 +31,22 @@ selectTwo.directive('selectTwo', function($timeout, $http) {
                     var data = element.find('div').select2('data');
                     if (!scope.$$phase) {
                         scope.$apply(function() {
-                            scope.onSelected({$value:data});
+                            if (ngModelController) {
+                                ngModelController.$setViewValue(scope.onSelected({$value:data}));
+                            } else {
+                                scope.onSelected({$value:data});
+                            }
                         });
                     }
                 }
             });
+
+            if (ngModelController) {
+                ngModelController.$formatters.push(function(modelValue) {
+                    select2element.select2('val', modelValue);
+                    return modelValue;
+                });
+            }
         }
     };
 });
