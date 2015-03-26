@@ -21,7 +21,7 @@ selectTwo.directive('selectTwo', function($timeout, $http) {
 
             // select2-ize fake div
             element.html(fake_div);
-            element.find('div').select2(scope.options);
+            element.find('div').select2(scope.options).select2('val', 'helper');
 
             // bind event: when closed and when an item removed
             element.on('select2-close select2-removed', function(e) {
