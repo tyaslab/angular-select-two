@@ -7,7 +7,7 @@ selectTwo.directive('selectTwo', function($timeout, $http) {
             options: '=selectTwo',
             onSelected: '&onSelected'
         },
-        link: function(scope, element, attrs) {
+        link: function(scope, element, attrs, ngModelController) {
             // generate fake div
             var fake_div = '<div';
             if (attrs.width) {
