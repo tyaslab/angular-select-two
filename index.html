@@ -1,153 +1,90 @@
 <!DOCTYPE html>
-<html data-ng-app="app">
+<html>
 <head>
-    <title>Test Select2</title>
-    <link rel="stylesheet" href="bower_components/select2/select2.css">
+<title>Test Angular Select Two</title>
+<link rel="stylesheet" href="/bower_components/select2/select2.css">
 </head>
-<body>
+<body data-ng-app="app">
+<h1>Test Angular Select Two</h1>
 
 <div data-ng-controller="MyController">
-    <div
-        data-ui-select-two="options"
-        data-class="this-is-a-class"
-        data-width="300px"
-        data-on-selected="onSelected($value)">
-    </div>
 
-    <div
-        data-ui-select-two="tag_options"
-        data-width="500px"
-        data-on-selected="onTagSelected($value)"
-        >
-    </div>
+Name: <input type="text" data-ng-model="object.name"><br>
+Categories:
+<span data-ng-model="object.categories" data-select-two="Select2Options" width="500px"></span><br>
+{[{ object.categories }]}
 </div>
 
-
-<script src="bower_components/jquery/dist/jquery.js"></script>
-<script src="bower_components/select2/select2.js"></script>
-<script src="bower_components/angular/angular.js"></script>
+<script src="/bower_components/jquery/dist/jquery.js"></script>
+<script src="/bower_components/angular/angular.js"></script>
+<script src="/bower_components/select2/select2.js"></script>
+<script src="/select-two.js"></script>
 <script>
-    var app = angular.module('app', []);
+var app = angular.module('app', ['selectTwo']);
 
-    app.directive('uiSelectTwo', function($timeout, $http) {
-        return {
-            scope: {
-                options: '=uiSelectTwo',
-                onSelected: '&onSelected'
-            },
-            link: function(scope, element, attrs) {
-                // generate fake div
-                var fake_div = '<div';
-                if (attrs.width) {
-                    fake_div += ' style="width: ' + attrs.width + ';"';
-                }
+app.config(['$interpolateProvider', function($interpolateProvider) {
+    $interpolateProvider.startSymbol('{[{');
+    $interpolateProvider.endSymbol('}]}');
+}]);
 
-                if (attrs.class) {
-                    fake_div += ' class="' + attrs.class + '"';
-                }
+app.controller('MyController', ['$scope', '$timeout', function($scope, $timeout) {
+    var fake_result = [
+        {id: 1, text: 'One', obj: {id: 1, text: 'One'}},
+        {id: 2, text: 'Two', obj: {id: 2, text: 'Two'}},
+        {id: 3, text: 'Three', obj: {id: 3, text: 'Three'}},
+        {id: 4, text: 'Four', obj: {id: 4, text: 'Four'}},
+        {id: 5, text: 'Five', obj: {id: 5, text: 'Five'}},
+        {id: 6, text: 'Six', obj: {id: 6, text: 'Six'}},
+        {id: 7, text: 'Seven', obj: {id: 7, text: 'Seven'}},
+        {id: 8, text: 'Eight', obj: {id: 8, text: 'Eight'}},
+        {id: 9, text: 'Nine', obj: {id: 9, text: 'Nine'}},
+        {id: 10, text: 'Ten', obj: {id: 10, text: 'Ten'}}
+    ];
 
-                fake_div += "></div>";
-                console.log(fake_div);
-                element.html(fake_div);
-                element.find('div').select2(scope.options);
-
-                element.on('select2-close select2-removed', function(e) {
-                    if (attrs.onSelected) {
-                        var data = element.find('div').select2('data');
-                        if (!scope.$$phase) {
-                            scope.$apply(function() {
-                                scope.onSelected({$value:data});
-                            });
-                        }
-                    }
+    $scope.Select2Options = {
+        multiple: true,
+        query: function(query) {
+            $timeout(function() {
+                query.callback({
+                    results: fake_result,
+                    more: false
                 });
-            }
-        };
-    });
+            });
+        },
+        initSelection: function(element, callback) {
+            var value = element.select2('val');
 
-    app.controller('MyController', ['$scope', '$http', function($scope, $http) {
-        // Orders how select2 do the ajax
-        // ajax.data --> ajax.transport --> ajax.results
+            $timeout(function() {
+                var result = fake_result.filter(function(x) {
+                    return value.indexOf(x.id.toString()) > -1;
+                });
 
-        $scope.options = {
-            allowClear: true,
-            tags: true,
-            ajax: {
-                transport: function(query) {
-                    // query contains any parameter useful for ajax calling
-                    // here, for example, we have at least term and page (default=1)
-
-                    $http.get('/api/v1/patient/?fuzzy=' + query.data.term + '&page=' + query.data.page).then(
-                        function(results) {
-                            query.success(results.data);
-                        },
-                        function(errors) {
-
-                        }
-                    );
-                },
-                data: function(term, page) {
-                    // this function handles our searching
-                    // default page = 1
-
-                    return {
-                        page: page,
-                        term: term
-                    }
-                },
-                results: function(data, page) {
-                    // this is the final function after we get the data from api
-                    // 'more' is a condition if resource has next page
-                    return {
-                        results: data.objects,
-                        more: page + 1 <= data.meta.total_page
-                    };
-                }
-            },
-            formatResult: function(obj) {
-                return obj.name
-            },
-            formatSelection: function(obj){
-                return obj.name
-            },
-            id: function(obj) {
-                return obj.resource_uri
-            },
-            initSelection: function(element, callback) {
-                var val = $scope.apaAtuh;
-
-                $http.get(val).then(
-                    function(results) {
-                        callback(results.data);
-                    },
-                    function(errors) {
-
-                    }
-                );
-            }
-        };
-
-        $scope.tag_options = {
-            tags: ['red', 'green', 'blue'],
-            tokenSeparators: [',', ' ']
-        };
-
-        $scope.onSelected = function(value) {
-            console.log(value);
-            $scope.apaAtuh = value.resource_uri;
-        };
-
-        $scope.onTagSelected = function(value) {
-            console.log(value);
+                callback(result);
+            });
         }
+    };
 
-        $scope.init = function() {
-            console.log('Entering My Controller');
-            $scope.apaAtuh = '/api/v1/patient/140006/';
-        };
+    $scope.get = function() {
+        $timeout(function() {
+            $scope.object = {
+                name: "Adul",
+                categories: ['1','2','3','4','5']
+            };
+        });
+    };
 
-        $scope.init();
-    }]);
+    $scope.init = function() {
+        console.log('Entering My Controller');
+        $scope.get();
+
+        $timeout(function() {
+            $scope.object.categories = ['1', '9', '10'];
+        }, 5000);
+    };
+
+    $scope.init();
+}]);
+
 </script>
 </body>
 </html>
