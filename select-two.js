@@ -1,6 +1,6 @@
 var selectTwo = angular.module('selectTwo', []);
 
-selectTwo.directive('selectTwo', function($timeout, $http) {
+selectTwo.directive('selectTwo', ['$timeout', '$http', function($timeout, $http) {
     return {
         require: '?ngModel',
         scope: {
@@ -49,4 +49,4 @@ selectTwo.directive('selectTwo', function($timeout, $http) {
             }
         }
     };
-});
+}]);
