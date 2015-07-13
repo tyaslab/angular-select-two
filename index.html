@@ -54,13 +54,17 @@ app.controller('MyController', ['$scope', '$timeout', function($scope, $timeout)
         initSelection: function(element, callback) {
             var value = element.select2('val');
 
-            $timeout(function() {
-                var result = fake_result.filter(function(x) {
-                    return value.indexOf(x.id.toString()) > -1;
-                });
+            if (value.length == 0) {
+                callback([]);
+           } else {
+                $timeout(function() {
+                    var result = fake_result.filter(function(x) {
+                        return value.indexOf(x.id.toString()) > -1;
+                    });
 
-                callback(result);
-            });
+                    callback(result);
+                });
+            }
         }
     };
 
