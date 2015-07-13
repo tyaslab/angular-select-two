@@ -10,9 +10,9 @@
 <div data-ng-controller="MyController">
 
 Name: <input type="text" data-ng-model="object.name"><br>
-Categories:
-<span data-ng-model="object.categories" data-select-two="Select2Options" width="500px"></span><br>
-{[{ object.categories }]}
+Categories: <span data-ng-model="object.categories" data-select-two="Select2Options" width="500px"></span>{[{ object.categories }]}<br>
+Animal: <span data-ng-model="object.animal" data-select-two="Select2Animals" width="500px"></span>{[{ object.animal }]}<br>
+Tags: <span data-ng-model="object.tags" data-select-two="Select2Tags" width="500px"></span>{[{ object.tags }]}<br>
 </div>
 
 <script src="/bower_components/jquery/dist/jquery.js"></script>
@@ -28,25 +28,32 @@ app.config(['$interpolateProvider', function($interpolateProvider) {
 }]);
 
 app.controller('MyController', ['$scope', '$timeout', function($scope, $timeout) {
-    var fake_result = [
-        {id: 1, text: 'One', obj: {id: 1, text: 'One'}},
-        {id: 2, text: 'Two', obj: {id: 2, text: 'Two'}},
-        {id: 3, text: 'Three', obj: {id: 3, text: 'Three'}},
-        {id: 4, text: 'Four', obj: {id: 4, text: 'Four'}},
-        {id: 5, text: 'Five', obj: {id: 5, text: 'Five'}},
-        {id: 6, text: 'Six', obj: {id: 6, text: 'Six'}},
-        {id: 7, text: 'Seven', obj: {id: 7, text: 'Seven'}},
-        {id: 8, text: 'Eight', obj: {id: 8, text: 'Eight'}},
-        {id: 9, text: 'Nine', obj: {id: 9, text: 'Nine'}},
-        {id: 10, text: 'Ten', obj: {id: 10, text: 'Ten'}}
-    ];
+    var fake_categories = [
+            {id: 1, text: 'One', obj: {id: 1, text: 'One'}},
+            {id: 2, text: 'Two', obj: {id: 2, text: 'Two'}},
+            {id: 3, text: 'Three', obj: {id: 3, text: 'Three'}},
+            {id: 4, text: 'Four', obj: {id: 4, text: 'Four'}},
+            {id: 5, text: 'Five', obj: {id: 5, text: 'Five'}},
+            {id: 6, text: 'Six', obj: {id: 6, text: 'Six'}},
+            {id: 7, text: 'Seven', obj: {id: 7, text: 'Seven'}},
+            {id: 8, text: 'Eight', obj: {id: 8, text: 'Eight'}},
+            {id: 9, text: 'Nine', obj: {id: 9, text: 'Nine'}},
+            {id: 10, text: 'Ten', obj: {id: 10, text: 'Ten'}}
+        ],
+        fake_animals = [
+            {id: 1, text: 'Bird', obj: {id: 1, text: 'Bird'}},
+            {id: 2, text: 'Crocodile', obj: {id: 1, text: 'Crocodile'}},
+            {id: 3, text: 'Python', obj: {id: 1, text: 'Python'}},
+            {id: 4, text: 'Hedgehog', obj: {id: 1, text: 'Hedgehog'}},
+            {id: 5, text: 'Mongoose', obj: {id: 1, text: 'Mongoose'}}
+        ];
 
     $scope.Select2Options = {
         multiple: true,
         query: function(query) {
             $timeout(function() {
                 query.callback({
-                    results: fake_result,
+                    results: fake_categories,
                     more: false
                 });
             });
@@ -58,7 +65,7 @@ app.controller('MyController', ['$scope', '$timeout', function($scope, $timeout)
                 callback([]);
            } else {
                 $timeout(function() {
-                    var result = fake_result.filter(function(x) {
+                    var result = fake_categories.filter(function(x) {
                         return value.indexOf(x.id.toString()) > -1;
                     });
 
@@ -68,11 +75,45 @@ app.controller('MyController', ['$scope', '$timeout', function($scope, $timeout)
         }
     };
 
+    $scope.Select2Animals = {
+        query: function(query) {
+            $timeout(function() {
+                query.callback({
+                    results: fake_animals,
+                    more: false
+                });
+            });
+        },
+        initSelection: function(element, callback) {
+            var value = element.select2('val');
+
+            if (value == 'helper') {
+                callback();
+           } else {
+                $timeout(function() {
+                    var result = fake_animals.filter(function(x) {
+                        console.log(value, x.id);
+                        return value == x.id.toString();
+                    });
+                    console.log(result, value);
+                    callback(result[0]);
+                });
+            }
+        }
+    };
+
+    $scope.Select2Tags = {
+        tags: true,
+        tokenSeparators: [',']
+    };
+
     $scope.get = function() {
         $timeout(function() {
             $scope.object = {
-                name: "Adul",
-                categories: ['1','2','3','4','5']
+                name: "Mailow",
+                // animal: 2,
+                categories: ['1','2','3','4','5'],
+                tags: ['wow','keren','banget']
             };
         });
     };
